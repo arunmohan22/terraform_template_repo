@@ -1,4 +1,4 @@
-# Default values for alexc-http.
+# Default values for sample-http.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -18,7 +18,7 @@ imagePullSecrets: []
 # This is to override the chart name.
 nameOverride: "busybox"
 fullnameOverride: "busybox"
-bootCommand: "echo 'Hello, Alex!' > /var/www/index.html && httpd -f -p 8280 -h /var/www/"
+bootCommand: "echo 'Hello, Sample!' > /var/www/index.html && httpd -f -p 8280 -h /var/www/"
 healthCheckPort: 8280
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
