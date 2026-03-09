@@ -1,0 +1,32 @@
+name: {{cookiecutter.service_name}}
+services:
+  cds-go-dev:
+    hostname: cds-go-dev
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - echo cds-go-dev OK
+    image: cds-harbor.rtplab.nimblestorage.com/devops/cds-go-dev:latest
+    networks:
+      - {{cookiecutter.service_name}}
+    volumes:
+      - $HOME/.gitconfig:/home/dev/.gitconfig
+      - $HOME/.ssh:/home/dev/.ssh
+      - {{cookiecutter.service_name}}-repo:/home/dev/ws/{{cookiecutter.service_name}}
+      - go-dir:/home/dev/go
+      - go-cache:/home/dev/.cache
+    working_dir: /home/dev/ws/{{cookiecutter.service_name}}
+
+volumes:
+  {{cookiecutter.service_name}}-repo:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":/System/Volumes/Data/${PWD}"
+  go-dir: {}
+  go-cache: {}
+
+networks:
+  {{cookiecutter.service_name}}:
+    name: local

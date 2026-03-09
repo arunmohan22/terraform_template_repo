@@ -1,0 +1,60 @@
+{# raw tag tells jinja to start escaping double curly brackets #}{%- raw -%}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.pod.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- if eq .Values.image.repository "local" }}
+          image: {{ .Values.image.name }}:{{ .Chart.Version }}
+          {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.service.grpc.grpcPort }}
+              protocol: TCP
+            {%- endraw %}
+            {%- if cookiecutter.rest == "True" %}
+            {%- raw %}
+            - name: {% endraw %}{{cookiecutter.restName}}{% raw %}
+              containerPort: {{ .Values.service.rest.restPort }}
+              protocol: TCP
+            {%- endraw %}
+            {%- endif %}
+            {%- raw %}
+          env:
+            - name: APP_LOGGING_LOGLEVEL
+              value: {{ quote .Values.env.loggingLoglevel }}
+            {%- endraw %}
+            {%- if cookiecutter.rest == "True" %}
+            - name: APP_REST_PORT
+              value: {%- raw %} {{ quote .Values.env.restPort }}{%- endraw %}
+            {%- endif %}
+            {%- raw %}
+{%- endraw -%}{# endraw tag tells jinja to stop escaping double curly brackets #}

@@ -1,0 +1,60 @@
+replicaCount: 1
+
+image:
+  name: "service-generator-model" # only used if repository == local
+  repository: "local"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "vault-auth-{{cookiecutter.serviceSlug}}"
+
+pod:
+  enabled: true
+  annotations:
+    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  grpc:
+    type: NodePort
+    grpcPort: 81
+    nodePort: 30984
+  {%- if cookiecutter.rest == "True" %}
+  rest:
+    type: NodePort
+    restPort: 80
+    nodePort: 30985
+  {%- endif %}
+    
+env:
+  loggingLoglevel: debug
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

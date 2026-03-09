@@ -1,0 +1,7 @@
+logging:
+  loglevel: debug
+grpc:
+  port: 5001
+rest:
+  port: 8080
+

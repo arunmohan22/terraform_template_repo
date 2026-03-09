@@ -1,0 +1,20 @@
+{
+  "name": "GO Service Template",
+  "repository_name": "go-service-template",
+  "serviceSlug": "{{cookiecutter.repository_name}}",
+  "service_name": "example-service",
+  "serviceName": "{{cookiecutter.service_name}}",
+  "__serviceStructName": "{{ cookiecutter.serviceName.title() | replace(' ','') | trim() }}",
+  "project_email": "pdl-team-ocelot@hpe.com",
+  "_dot_ID": "{{.ID}}",
+  "__copyright": "(C) Copyright {% now 'utc', '%Y' %} Hewlett Packard Enterprise Development LP",
+  "github_host": "github.com",
+  "github_org": "glcp",
+  "__repository_url": "{{cookiecutter.github_host}}/{{cookiecutter.github_org}}/{{cookiecutter.repository_name}}",
+  "repoURL": "github.hpe.com/cloud/{{cookiecutter.serviceSlug}}",
+  "grpc": [true, false],
+  "grpcName": "grpc",
+  "rest": [true, false],
+  "restName": "nb-rest",
+  "_goVersion": "1.18"
+}

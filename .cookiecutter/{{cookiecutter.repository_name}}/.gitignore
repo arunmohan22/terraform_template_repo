@@ -1,0 +1,37 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Build outputs
+/dist
+/.built
+/.cookiecutter.cache
+{{cookiecutter.service_name}}-deploy.yaml
+
+# Helm package outputs
+*.tgz
+
+# Test binary, built with `go test -c`
+*.test
+
+# Goland IDE
+.idea
+
+# VSCode
+.vscode
+**/__debug_bin
+
+# coverage files
+{{cookiecutter.service_name}}.out
+{{cookiecutter.service_name}}.cov
+{{cookiecutter.service_name}}-unit_test_coverage.html
+{{cookiecutter.service_name}}-unit-test-output.txt
+
+# macOS files
+.DS_Store
+
+# personal dev environments customizations
+compose.override.yaml

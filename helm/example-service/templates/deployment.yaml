@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "go-service-template.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "go-service-template.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "go-service-template.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.pod.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "go-service-template.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "go-service-template.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- if eq .Values.image.repository "local" }}
+          image: {{ .Values.image.name }}:{{ .Chart.Version }}
+          {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.service.grpc.grpcPort }}
+              protocol: TCP
+            - name: nb-rest
+              containerPort: {{ .Values.service.rest.restPort }}
+              protocol: TCP
+          env:
+            - name: APP_LOGGING_LOGLEVEL
+              value: {{ quote .Values.env.loggingLoglevel }}
+            - name: APP_REST_PORT
+              value: {{ quote .Values.env.restPort }}

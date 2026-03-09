@@ -1,0 +1,53 @@
+{# raw tag tells jinja to start escaping double curly brackets #}{%- raw -%}
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.grpc.type }}
+  {{- if eq .Values.service.grpc.type "ClusterIP" }}
+  ports:
+    - port: {{ .Values.service.grpc.grpcPort }}
+      targetPort: {{ index .Values.service.grpc.grpcPort }}
+  {{- else }}
+  ports:
+    - port: {{ .Values.service.grpc.grpcPort }}
+      targetPort: {{ index .Values.service.grpc.grpcPort }}
+      nodePort: {{ .Values.service.grpc.nodePort }}
+  {{- end }}
+      name: grpc
+  selector:
+    {{- include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.selectorLabels" . | nindent 4 }}
+{%- endraw %}
+{%- if cookiecutter.rest == "True" %}
+{%- raw %}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {% endraw %}{{cookiecutter.restName}}{% raw %}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.rest.type }}
+  {{- if eq .Values.service.rest.type "ClusterIP" }}
+  ports:
+    - port: {{ .Values.service.rest.restPort }}
+      targetPort: {{ index .Values.service.rest.restPort }}
+  {{- else }}
+  ports:
+    - port: {{ .Values.service.rest.restPort }}
+      targetPort: {{ index .Values.service.rest.restPort }}
+      nodePort: {{ .Values.service.rest.nodePort }}
+  {{- end }}
+      name: grpc-api
+      appProtocol: grpc
+  selector:
+    {{- include "{% endraw %}{{cookiecutter.serviceSlug}}{% raw %}.selectorLabels" . | nindent 4 }}
+{%- endraw %}
+{%- endif %}
+{# endraw tag tells jinja to stop escaping double curly brackets #}

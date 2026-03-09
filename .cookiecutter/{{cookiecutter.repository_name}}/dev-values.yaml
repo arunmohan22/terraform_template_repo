@@ -1,0 +1,11 @@
+logging:
+  loglevel: debug
+{%- if cookiecutter.grpc == "True" %}
+grpc:
+  port: 5001
+{%- endif %}
+{%- if cookiecutter.rest == "True" %}
+rest:
+  port: 8080
+{%- endif %}
+

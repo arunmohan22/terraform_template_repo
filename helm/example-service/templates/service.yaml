@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "go-service-template.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.grpc.type }}
+  {{- if eq .Values.service.grpc.type "ClusterIP" }}
+  ports:
+    - port: {{ .Values.service.grpc.grpcPort }}
+      targetPort: {{ index .Values.service.grpc.grpcPort }}
+  {{- else }}
+  ports:
+    - port: {{ .Values.service.grpc.grpcPort }}
+      targetPort: {{ index .Values.service.grpc.grpcPort }}
+      nodePort: {{ .Values.service.grpc.nodePort }}
+  {{- end }}
+      name: grpc
+  selector:
+    {{- include "go-service-template.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nb-rest
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "go-service-template.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.rest.type }}
+  {{- if eq .Values.service.rest.type "ClusterIP" }}
+  ports:
+    - port: {{ .Values.service.rest.restPort }}
+      targetPort: {{ index .Values.service.rest.restPort }}
+  {{- else }}
+  ports:
+    - port: {{ .Values.service.rest.restPort }}
+      targetPort: {{ index .Values.service.rest.restPort }}
+      nodePort: {{ .Values.service.rest.nodePort }}
+  {{- end }}
+      name: grpc-api
+      appProtocol: grpc
+  selector:
+    {{- include "go-service-template.selectorLabels" . | nindent 4 }}
+

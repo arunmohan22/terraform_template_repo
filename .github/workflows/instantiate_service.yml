@@ -1,0 +1,73 @@
+name: instantiate-service
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_name:
+        type: string
+        required: true
+        description: "Service name"
+      enable_rest:
+        type: boolean
+        required: true
+        description: 'Enable REST Server'
+      enable_kafka_consumer:
+        type: boolean
+        required: true
+        description: 'Enable Kafka Consumer'
+
+jobs:
+  setup-repo:
+    if: ${{ github.repository != 'glcp/go-service-template' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository to '${{ github.workspace }}'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - run: echo "REPOSITORY_NAME=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
+        shell: bash
+
+      - run: echo "REPOSITORY_OWNER=$(echo '${{ github.repository }}' | awk -F '/' '{print $1}')" >> $GITHUB_ENV
+        shell: bash
+
+      - run: echo "SERVICE_NAME=${{ inputs.service_name }}" >> $GITHUB_ENV
+        shell: bash
+
+      - run: echo "ADD_REST_SERVER=true" >> $GITHUB_ENV
+        if: ${{ inputs.enable_rest }}
+        shell: bash
+
+      - run: echo "ADD_KAFKA_CONSUMER=true" >> $GITHUB_ENV
+        if: ${{ inputs.enable_kafka_consumer }}
+        shell: bash
+
+      - name: Is this still a template
+        id: is_template
+        run: echo "::set-output name=is_template::$(ls .github/template.yml &> /dev/null && echo true || echo false)"
+
+      - name: Install cookiecutter
+        run: pip3 install cookiecutter
+
+      - name: Instantiate '${{ github.repository }}' from template
+        if: steps.is_template.outputs.is_template == 'true'
+        run: |
+          .github/instantiate_service.sh -v \
+              -s $SERVICE_NAME \
+              -r $REPOSITORY_NAME \
+              -w $REPOSITORY_OWNER
+          .github/install_service.sh -v -r $REPOSITORY_NAME
+          # Delete cookiecutter template and cache directory, no longer a template
+          rm -rf .cookiecutter .cookiecutter.cache
+          # Delete the instantiate_service.yml workflow, it has served its purpose
+          rm .github/workflows/instantiate_service.yml
+          rm .github/instantiate_service.sh
+          rm .github/template.yml
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Instantiate repository from template."
+          push_options: --force
